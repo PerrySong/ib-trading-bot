@@ -4,6 +4,7 @@ import time
 import pandas as pd
 
 from lib.trade_app import TradeApp
+from lib.helper import *
 
 
 def main():
@@ -26,6 +27,12 @@ def main():
     pos_df.drop_duplicates(inplace=True, ignore_index=True)  # position callback tends to give duplicate values
     app.reqOpenOrders()
     time.sleep(2)
+
+    for ticker in tickers:
+        print("starting passthrough for.....", ticker)
+        app.hist_data(tickers.index(ticker), contract(ticker), '1 M', '15 mins')
+        time.sleep(5)
+        df = app.df(app, tickers, ticker)
 
 
 

@@ -7,7 +7,7 @@ from ibapi.order import Order
 def get_data_in_df(trade_app: TradeApp, symbols: str, symbol: str) -> pd.DataFrame:
     """returns extracted historical data in dataframe format"""
 
-    df = pd.DataFrame(trade_app.data[symbols.index(symbol)])
+    df = pd.DataFrame(trade_app.hist_data[symbols.index(symbol)])
     df.set_index("Date", inplace=True)
     return df
 

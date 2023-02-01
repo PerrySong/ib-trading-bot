@@ -3,12 +3,16 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 from ibapi.order import Order
 import pandas as pd
+from decimal import *
 
 
 class TradeApp(EWrapper, EClient):
     def __init__(self):
         EClient.__init__(self, self)
-        self.data = {}
+        # { reqId : [{"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
+        #                  "Volume": bar.volume}] }
+        #
+        self.hist_data = {}
         self.pos_df = pd.DataFrame(columns=['Account', 'Symbol', 'SecType',
                                             'Currency', 'Position', 'Avg cost'])
 
@@ -20,12 +24,12 @@ class TradeApp(EWrapper, EClient):
 
     def historicalData(self, req_id, bar):
         # print(f'Time: {bar.date}, Open: {bar.open}, Close: {bar.close}')
-        if req_id not in self.data:
-            self.data[req_id] = [
+        if req_id not in self.hist_data:
+            self.hist_data[req_id] = [
                 {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
                  "Volume": bar.volume}]
         else:
-            self.data[req_id].append(
+            self.hist_data[req_id].append(
                 {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
                  "Volume": bar.volume})
 
@@ -34,14 +38,26 @@ class TradeApp(EWrapper, EClient):
         self.nextValidOrderId = order_id
         print("NextValidId:", order_id)
 
-    def position(self, account, contract, position, avg_cost):
+    def position(self, account: str, contract: Contract, position: Decimal, avg_cost: float):
+        """_summary_
+                After invoking reqPositions, the positions will then be received through the
+                IBApi.EWrapper.position callback
+
+                Args:
+                    account (_type_): _description_
+                    contract (_type_): _description_
+                    position (_type_): _description_
+                    avg_cost (_type_): _description_
+                """
         super().position(account, contract, position, avg_cost)
+
         dictionary = {"Account": account, "Symbol": contract.symbol, "SecType": contract.secType,
                       "Currency": contract.currency, "Position": position, "Avg cost": avg_cost}
+        print("position: ", dictionary)
         self.pos_df = self.pos_df.append(dictionary, ignore_index=True)
 
     def positionEnd(self):
-        print("Latest position data extracted")
+        print("Latest position data extracted 2")
 
     def openOrder(self, order_id, contract, order, order_state):
         super().openOrder(order_id, contract, order, order_state)
@@ -50,7 +66,17 @@ class TradeApp(EWrapper, EClient):
                       "Exchange": contract.exchange, "Action": order.action, "OrderType": order.orderType,
                       "TotalQty": order.totalQuantity, "CashQty": order.cashQty,
                       "LmtPrice": order.lmtPrice, "AuxPrice": order.auxPrice, "Status": order_state.status}
+        print("openOrder: ", dictionary)
         self.order_df = self.order_df.append(dictionary, ignore_index=True)
+
+    def openOrderEnd(self):
+        print("openOrderEnd.")
+
+    def get_stock_df(self, symbols, symbol):
+        """returns extracted historical data in dataframe format"""
+        df = pd.DataFrame(self.hist_data[symbols.index(symbol)])
+        df.set_index("Date", inplace=True)
+        return df
 
     def hist_data(self, req_num: str, contract: Contract, duration: str, candle_size):
         """extracts historical data"""
