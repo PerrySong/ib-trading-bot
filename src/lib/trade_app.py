@@ -1,4 +1,5 @@
 from ibapi.client import EClient
+from ibapi.common import BarData
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 from ibapi.order import Order
@@ -22,8 +23,9 @@ class TradeApp(EWrapper, EClient):
                                               'TotalQty', 'CashQty', 'LmtPrice',
                                               'AuxPrice', 'Status'])
 
-    def historicalData(self, req_id, bar):
+    def historicalData(self, req_id: int, bar: BarData):
         # print(f'Time: {bar.date}, Open: {bar.open}, Close: {bar.close}')
+        print("historicalData for reqId: ", req_id)
         if req_id not in self.hist_data:
             self.hist_data[req_id] = [
                 {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
@@ -32,6 +34,12 @@ class TradeApp(EWrapper, EClient):
             self.hist_data[req_id].append(
                 {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
                  "Volume": bar.volume})
+
+    def historicalDataEnd(self, req_id: int, start: str, end: str):
+        print("historicalDataEnd for reqId: ", req_id)
+
+    def historicalDataUpdate(self, req_id: int, bar: BarData):
+        print("historicalDataUpdate for reqId: ", req_id)
 
     def nextValidId(self, order_id):
         super().nextValidId(order_id)
@@ -78,7 +86,7 @@ class TradeApp(EWrapper, EClient):
         df.set_index("Date", inplace=True)
         return df
 
-    def hist_data(self, req_num: str, contract: Contract, duration: str, candle_size):
+    def req_hist_data(self, req_num: str, contract: Contract, duration: str, candle_size):
         """extracts historical data"""
         self.reqHistoricalData(reqId=req_num,
                                contract=contract,
