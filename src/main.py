@@ -14,6 +14,7 @@ def main():
                 clientId=23)  # port 4002 for ib gateway paper trading/7497 for TWS paper trading
     con_thread = threading.Thread(target=app.run, daemon=True)
     con_thread.start()
+    time.sleep(5)
 
     tickers = ["FB", "AMZN", "INTC", "MSFT", "AAPL", "GOOG", "CSCO", "CMCSA", "ADBE", "NVDA",
                "NFLX", "PYPL", "AMGN", "AVGO", "TXN", "CHTR", "QCOM", "GILD", "FISV", "BKNG",
@@ -30,9 +31,10 @@ def main():
 
     for ticker in tickers:
         print("starting passthrough for.....", ticker)
-        app.hist_data(tickers.index(ticker), contract(ticker), '1 M', '15 mins')
+        app.req_hist_data(tickers.index(ticker), contract(ticker), '1 M', '15 mins')
         time.sleep(5)
-        df = app.df(app, tickers, ticker)
+        # df = app.get_stock_df(tickers, ticker)
+
 
 
 

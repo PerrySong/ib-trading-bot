@@ -23,16 +23,30 @@ class TradeApp(EWrapper, EClient):
                                               'TotalQty', 'CashQty', 'LmtPrice',
                                               'AuxPrice', 'Status'])
 
+    @staticmethod
+    def parse_time(date: str):
+        # date: 20210204 13:30:00 US/Eastern
+        # Parse to 20210204
+        return date.split()[1]
+
+    @staticmethod
+    def parse_date(date: str):
+        # date: 20210204 13:30:00 US/Eastern
+        # Parse to 20210204
+        return date.split()[0]
+
     def historicalData(self, req_id: int, bar: BarData):
         # print(f'Time: {bar.date}, Open: {bar.open}, Close: {bar.close}')
         print("historicalData for reqId: ", req_id)
         if req_id not in self.hist_data:
             self.hist_data[req_id] = [
-                {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
+                {"Date": self.parse_date(bar.date), "Time": self.parse_time(bar.date),  "High": bar.high,
+                 "Low": bar.low, "Open": bar.open, "Close": bar.close,
                  "Volume": bar.volume}]
         else:
             self.hist_data[req_id].append(
-                {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Close": bar.close,
+                {"Date": self.parse_date(bar.date), "Time": self.parse_time(bar.date), "High": bar.high,
+                 "Low": bar.low, "Open": bar.open, "Close": bar.close,
                  "Volume": bar.volume})
 
     def historicalDataEnd(self, req_id: int, start: str, end: str):
